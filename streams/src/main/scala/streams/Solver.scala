@@ -2,6 +2,8 @@ package streams
 
 import common._
 
+import scala.util.Try
+
 /**
  * This component implements the solver for the Bloxorz game
  */
@@ -63,17 +65,25 @@ trait Solver extends GameDef {
    * of different paths - the implementation should naturally
    * construct the correctly sorted stream.
    */
-//  @annotation.tailrec
   def from(initial: Stream[(Block, List[Move])],
            explored: Set[Block]): Stream[(Block, List[Move])] = {
-    val next = initial
-      .map(i => i._1.legalNeighbors.map(n => (n._1, n._2 :: i._2)).toStream)
-      .flatMap(ns => newNeighborsOnly(ns, explored))
+    @annotation.tailrec
+    def loop(finished: Stream[(Block, List[Move])], initial: Stream[(Block, List[Move])],
+              explored: Set[Block]): Stream[(Block, List[Move])] = {
+      val next = initial
+        .map(i => i._1.legalNeighbors.map(n => (n._1, n._2 :: i._2)).toStream)
+        .flatMap(ns => newNeighborsOnly(ns, explored))
 
-    val newexplored = explored ++ next.map(_._1).toSet
-    val (finished, nonyet) = next.partition(_._1.isStandingOnGoal)
+      if (next.isEmpty) finished
+      else {
+        val newexplored = explored ++ next.map(_._1).toSet
+        val (f, nf) = next.partition(_._1.isStandingOnGoal)
 
-    finished #::: from(nonyet, newexplored)
+        loop(finished ++ f, nf, newexplored)
+      }
+    }
+
+    loop(Stream.empty, initial, explored)
   }
 
   /**
@@ -95,5 +105,6 @@ trait Solver extends GameDef {
    * the first move that the player should perform from the starting
    * position.
    */
-  lazy val solution: List[Move] = pathsToGoal.head._2.reverse
+  lazy val solution: List[Move] =
+    Try(pathsToGoal.head._2.reverse).getOrElse(List.empty)
 }
