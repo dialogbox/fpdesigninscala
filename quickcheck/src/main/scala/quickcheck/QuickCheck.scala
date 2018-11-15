@@ -50,6 +50,17 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
   }
 
   property("sorted") = forAll { h: H =>
-    toStream(h).sliding(2).forall { case Seq(x, y) => x <= y }
+    toStream(h).sliding(2).forall {
+      case Seq(x, y) => x <= y
+      case Seq(_) => true
+    }
   }
+
+  property("sorted2") = forAll { (h1: H, h2: H, h3: H) =>
+    toStream(meld(meld(h1, h2), h3)).sliding(2).forall {
+      case Seq(x, y) => x <= y
+      case Seq(_) => true
+    }
+  }
+
 }
