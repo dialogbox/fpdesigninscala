@@ -46,7 +46,7 @@ trait BinomialHeap extends Heap {
   override def isEmpty(ts: H) = ts.isEmpty
 
   override def insert(x: A, ts: H) = ins(Node(x,0,Nil), ts)
-  override def meld(ts1: H, ts2: H) = (ts1, ts2) match {
+  override def meld(ts1: H, ts2: H): H = (ts1, ts2) match {
     case (Nil, ts) => ts
     case (ts, Nil) => ts
     case (t1::ts1, t2::ts2) =>
