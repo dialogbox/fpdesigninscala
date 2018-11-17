@@ -39,11 +39,6 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     findMin(h) == a.min(b)
   }
 
-  property("min3") = forAll { (a: Int, b: Int, c: Int) =>
-    val h = insert(a, insert(b, insert(c, empty)))
-    findMin(h) == a.min(b).min(c)
-  }
-
   property("minempty") = forAll { a: Int =>
     val h = deleteMin(insert(a, empty))
     isEmpty(h)
@@ -56,11 +51,8 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     }
   }
 
-  property("sorted2") = forAll { (h1: H, h2: H, h3: H) =>
-    toStream(meld(meld(h1, h2), h3)).sliding(2).forall {
-      case Seq(x, y) => x <= y
-      case Seq(_) => true
-    }
+  property("merge") = forAll { (h1: H, h2: H) =>
+    (toStream(h1) ++ toStream(h2)).sortBy(a => a) == toStream(meld(h1, h2)).sortBy(a => a)
   }
 
 }
